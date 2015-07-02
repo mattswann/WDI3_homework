@@ -1,0 +1,20 @@
+.container {
+  background-color: lightgray;
+  padding: 50px;
+  width: 80%;
+  margin: 0 auto;
+  height: 500px;
+  font-family: sans-serif;
+}
+
+.form-group {
+  margin: 15px;
+}
+
+#planButton {
+  font-size: 24px;
+}
+
+li {
+  margin: 15px;
+}
