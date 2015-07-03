@@ -1,0 +1,17 @@
+body {
+  background-color: lightgray;
+}
+
+.container {
+  background-color: white;
+  width: 75%;
+  margin: 0 auto;
+  padding: 50px;
+  height: 500px;
+}
+
+#coinImage {
+  width: 200px;
+  margin: 50px auto;
+  display: block;
+}

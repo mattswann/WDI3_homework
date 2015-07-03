@@ -1,5 +1,6 @@
 // PT Planner Exercise
 
+// metro map
 var metro = {
 
   alamein : {
@@ -15,10 +16,36 @@ var metro = {
 	sandringham : {
     name : "Sandringham",
     stops : ['Southern Cross', 'Richmond', 'South Yarra', 'Prahran', 'Windsor']
-  }
+  },
 
+  lilydale : {
+      name: "Lilydale",
+      stops : ['Lilydale', 'Mooroolbark', 'Croydon']
+  }
 };
 
+// populate select boxes
+var allStops = [];
+for (var line in metro) {
+  for (var i = 0; i < metro[line].stops.length; i++) {
+    if (allStops.indexOf(metro[line].stops[i]) === -1) {
+      allStops.push(metro[line].stops[i]);
+    }
+  }
+}
+allStops.sort();
+
+var optionsHTML = '';
+
+for (var i = 0; i < allStops.length; i++) {
+  optionsHTML += '<option value="' + allStops[i] + '">' + allStops[i] + '</option>';
+}
+
+document.getElementById('origin-select').innerHTML = optionsHTML;
+document.getElementById('destination-select').innerHTML = optionsHTML;
+
+
+// trip planning
 var linesThrough = function(station) {
   lines = [];
 
@@ -31,7 +58,7 @@ var linesThrough = function(station) {
   return lines;
 };
 
-var singleLine = function(origin, destination) {
+var sameLine = function(origin, destination) {
   for (var line in metro) {
     if (metro[line].stops.indexOf(origin) > -1 && metro[line].stops.indexOf(destination) > -1) {
       return line;
@@ -40,96 +67,70 @@ var singleLine = function(origin, destination) {
   return false;
 };
 
+var throughRichmond = function(line) {
+  return metro[line].stops.indexOf('Richmond') > -1;
+};
+
 var determineLines = function(origin, destination) {
   var lines = [];
 
   if (linesThrough(origin).length < 1 || linesThrough(destination).length < 1) {
     return lines;
-  } else if (singleLine(origin, destination)) {
-    lines.push(singleLine(origin, destination));
+  } else if (sameLine(origin, destination)) {
+    lines.push(sameLine(origin, destination));
     return lines;
-  } else {
+  } else if (throughRichmond(linesThrough(origin)[0]) && throughRichmond(linesThrough(destination)[0])) {
     lines.push(linesThrough(origin)[0]);
     lines.push(linesThrough(destination)[0]);
+    return lines;
+  } else {
     return lines;
   }
 };
 
 var planTrip = function(origin, destination) {
   var tripLines = determineLines(origin, destination);
-  var journey;
+  var journey = [];
 
-  if (tripLines.length < 1) {
-    console.log('Unable to plan this trip.');
-  } else if (tripLines.length === 1) {
-    journey = singleLineJourney(tripLines[0], origin, destination);
-  } else {
-    journey = multiLineJourney(tripLines[0], origin, tripLines[1], destination);
+  if (tripLines.length === 1) {
+    journey.push(singleLeg(tripLines[0], origin, destination));
+  } else if (tripLines.length > 1) {
+    journey.push(singleLeg(tripLines[0], origin, 'Richmond'));
+    journey.push(singleLeg(tripLines[1], 'Richmond', destination));
   }
-
   updateJourneyHTML(journey);
 };
 
-var singleLineJourney = function(line, startStation, endStation) {
+var singleLeg = function(line, startStation, endStation) {
   var originIndex = metro[line].stops.indexOf(startStation);
   var destinationIndex = metro[line].stops.indexOf(endStation);
-  var journey = [];
-  var leg;
+  var leg = { line: line };
 
   if (originIndex <= destinationIndex) {
-    leg = metro[line].stops.slice(originIndex, destinationIndex + 1);
-    journey.push({ line: line, stops: leg });
+    leg.stops = metro[line].stops.slice(originIndex, destinationIndex + 1);
+    leg.direction = metro[line].stops[metro[line].stops.length - 1];
   } else {
-    reverseLine = metro[line].stops.reverse();
-    leg = reverseLine.slice(reverseLine.indexOf(startStation), reverseLine.indexOf(endStation) + 1);
-    journey.push({ line: line, stops: leg });
+    reverseLine = metro[line].stops.slice().reverse();
+    leg.stops = reverseLine.slice(reverseLine.indexOf(startStation), reverseLine.indexOf(endStation) + 1);
+    leg.direction = reverseLine[reverseLine.length - 1];
   }
-
-  return journey;
+  return leg;
 };
 
-var multiLineJourney = function(startLine, startStation, endLine, endStation) {
-  var startLineStops = metro[startLine].stops;
-  var endLineStops = metro[endLine].stops;
-
-  var originIndex = startLineStops.indexOf(startStation);
-  var destinationIndex = endLineStops.indexOf(endStation);
-  var richmondIndexStart = startLineStops.indexOf('Richmond');
-  var richmondIndexEnd = endLineStops.indexOf('Richmond');
-
-  var journey = [];
-  var leg;
-
-  // First Leg
-  if (originIndex <= richmondIndexStart) {
-    leg = startLineStops.slice(originIndex, richmondIndexStart + 1);
-    journey.push({ line: startLine, stops: leg });
+// page updates and buttons
+var pluralize = function(count, word) {
+  if (count <= 0) {
+    return 'no ' + word + 's';
+  } else if (count === 1) {
+    return count + ' ' + word;
   } else {
-    reverseLine = startLineStops.reverse();
-    originIndex = reverseLine.indexOf(startStation);
-    richmondIndexStart = reverseLine.indexOf('Richmond');
-    leg = reverseLine.slice(originIndex, richmondIndexStart + 1);
-    journey.push({ line: startLine, stops: leg });
+    return count + ' ' + word + 's';
   }
-
-  // Second Leg
-  if (richmondIndexEnd <= destinationIndex) {
-    leg = endLineStops.slice(richmondIndexEnd, destinationIndex + 1);
-    journey.push({ line: endLine, stops: leg });
-  } else {
-    reverseLine = endLineStops.reverse();
-    destinationIndex = reverseLine.indexOf(endStation);
-    richmondIndexEnd = reverseLine.indexOf('Richmond');
-    leg = reverseLine.slice(richmondIndexEnd, destinationIndex + 1);
-    journey.push({ line: endLine, stops: leg });
-  }
-
-  return journey;
 };
-
 
 var updateJourneyHTML = function(journey) {
   var numberOfStops = 0;
+  var numberOfChanges = journey.length - 1;
   var journeyDiv = document.getElementById('journey');
   var journeyHTML = '';
 
@@ -141,15 +142,25 @@ var updateJourneyHTML = function(journey) {
     numberOfStops += journey[i].stops.length;
   }
 
-  journeyHTML += '<p>Your journey has ' + numberOfStops + ' stops.</p>';
-  journeyHTML += '<ul>';
+  if (numberOfStops > 1) {
+    journeyHTML += '<p>Your journey covers ' + pluralize(numberOfStops, 'stop') + ' with ' + pluralize(numberOfChanges, 'change') + '. </p>';
 
-  for (var j = 0; j < journey.length; j++) {
-    journeyHTML += '<li>' + metro[journey[j].line].name + ' line: ' + journey[j].stops.join(' => ') + '</li>';
+    for (var leg = 0; leg < journey.length; leg++) {
+      journeyHTML += '<div class="journeyLeg">';
+      journeyHTML += '<h3>' + metro[journey[leg].line].name + ' line (towards ' + journey[leg].direction + '):</h3>';
+      journeyHTML += '<ul>';
+      for (var stop = 0; stop < journey[leg].stops.length; stop++) {
+        journeyHTML += '<li>' + journey[leg].stops[stop] + '</li>';
+      }
+      journeyHTML += '</ul></div>';
+    }
+
+    journeyDiv.innerHTML = journeyHTML;
+  } else if (numberOfStops === 1) {
+    journeyDiv.innerHTML = '<p>You do not need a train for this journey.</p>';
+  } else {
+    journeyDiv.innerHTML = '<p>Unable to plan this trip.</p>';
   }
-
-  journeyHTML += '</ul>';
-  journeyDiv.innerHTML = journeyHTML;
 };
 
 var planButton = document.getElementById('planButton');
@@ -160,29 +171,3 @@ planButton.addEventListener("click", function() {
 
   planTrip(origin, destination);
 });
-
-// var logDivider = function(n) {
-//   var divider = '';
-//   for (var i = 0; i < n; i++) {
-//     divider += '=';
-//   }
-//   console.log(divider);
-// };
-//
-// var logJourney = function(journey) {
-//   var numberOfStops = 0;
-//
-//   if (journey.length === 2) {
-//     numberOfStops = -1;
-//   }
-//
-//   for (var i = 0; i < journey.length; i++) {
-//     numberOfStops += journey[i].stops.length;
-//   }
-//
-//   console.log('Your journey consists of ' + numberOfStops + ' stops.');
-//
-//   for (var j = 0; j < journey.length; j++) {
-//     console.log(metro[journey[j].line].name + ' line: ' + journey[j].stops.join(' => '));
-//   }
-// };
