@@ -1,0 +1,30 @@
+/* General Styles */
+
+html {
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  max-width: 960px;
+  margin: 0 auto;
+  background-color: lightblue;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0;
+  padding: 20px 0;
+}
+
+#ac-status {
+  font-size: 2em;
+}
