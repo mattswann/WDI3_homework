@@ -6,7 +6,7 @@ class Order
     @type = type
     @sugar_amount = sugar_amount.to_s + "sugars"
     @size = size
-    @name = name
+    @name = name 
     @waiting_time = 0
     @options = ''
     @collected = false
@@ -53,7 +53,7 @@ class Order
   end
 
   def get_name
-    return @name
+    return @name #you should add something that spells the name wrong something like-->   name.gsub(/[aeiouy]/, %w(a e i o u y).sample)
   end
 
   def get_waiting_time
