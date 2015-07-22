@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hangman</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script type="text/javascript" src="js/underscore.js"></script>
+</head>
+<body>
+  <div id="container">
+    <nav>
+      <h1>HANGMAN</h1>
+      <ul>
+        <li id="giveUpButton">Give Up</li>
+        <li id="resetButton">Reset</li>
+      </ul>
+    </nav>
+    <div id="gamePlayArea">
+      <div id="hangmanArea">
+        <span id="guessesLeft"></span> guesses remaining.
+      </div>
+      <div id="letterArea">
+        <div id="lettersUsed">
+          Incorrect Guesses:
+          <div id="guessedLetters"></div>
+        </div>
+        Press a key to guess...
+      </div>
+    </div>
+    <div id="wordString"></div>
+    <div id="clock">Elapsed Time:<span id="timer">00:00</span></div>
+  </div>
+  <script type="text/javascript" src="js/scripts.js"></script>
+</body>
+</html>
