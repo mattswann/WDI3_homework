@@ -20,7 +20,7 @@ var metro = {
 
   lilydale : {
       name: "Lilydale",
-      stops : ['Lilydale', 'Mooroolbark', 'Croydon']
+      stops : ['Lilydale', 'Mooroolbark', 'Croydon', 'Ringwood', 'Richmond', 'Flinders Street']
   }
 };
 
@@ -69,6 +69,36 @@ var sameLine = function(origin, destination) {
 
 var throughRichmond = function(line) {
   return metro[line].stops.indexOf('Richmond') > -1;
+};
+
+var intersectionsOf = function (line1, line2) {
+  var intersections = [];
+
+  for (var i = 0; i < line1.length; i++) {
+    if (metro[line2].stops.indexOf(metro[line1].stops[i]) > -1) {
+      intersections.push(metro[line1].stops[i]);
+    }
+  }
+
+  return intersections;
+};
+
+var routeOptions = function(origin, destination) {
+  var options = [];
+  var originLines = linesThrough(origin);
+  var destinationLines = linesThrough(destination);
+
+  for (var i = 0; i < originLines.length; i++) {
+    for (var j = 0; j < destinationLines.length; j ++) {
+      if (intersectionsOf(originLines[i], destinationLines[j]).length > 0) {
+        options.push({ lineOne : originLines[i],
+                       lineTwo : destinationLines[j],
+                       changeStation : intersectionsOf(originLines[i], destinationLines[j])[0] });
+      }
+    }
+  }
+
+  return options;
 };
 
 var determineLines = function(origin, destination) {

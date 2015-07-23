@@ -1,0 +1,15 @@
+.container {
+  background-color: linen;
+  max-width: 860px;
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+body {
+  background-color: darkgray;
+}
+
+#response {
+  margin: 20px 0; 
+}
